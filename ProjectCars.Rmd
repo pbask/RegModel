@@ -1,0 +1,79 @@
+---
+title: "Regression Model - Project"
+output: html_document
+---
+**Executive Summary**
+The below analysis is to explore the relationship between a set of variables and miles per gallon (MPG) (outcome). In particular we are interested in the following:-
+“Is an automatic or manual transmission better for MPG”
+"Quantify the MPG difference between automatic and manual transmissions"
+
+Loading and Pre-processing Data
+```{r, cache=TRUE}
+library(datasets)
+data(mtcars)
+dt <- mtcars
+for (i in 1:nrow(dt)){
+  if (dt$am[i] == 0) {dt$trans[i] <- "Automatic"}
+  else if (dt$am[i] == 1) {dt$trans[i] <- "Manual"}
+}
+```
+
+**Exploratary Data Analysis**
+We begin the exploratory data analysis by comparing the automatic versus manual transmission based on the MPG. The data analysis figure can be found in the appendix. 
+**Means test (ttest) to analyze mileage of automatic vs. manual transmission**
+```{r, cache=TRUE}
+mpg_am <- dt[mtcars$am == 0,]$mpg
+mpg_mt <- dt[mtcars$am == 1,]$mpg
+t.test(mpg_am, mpg_mt)
+```
+From the above we note that the p-value is 0.001374 which is neither 5% or 1%, hence the alternative hypothesis (the difference in means is not equal to 0) is true. The mean mileage of automatic transmission is 17.15 MPG and the manual transmission is 24.39 MPG. But, the above is based on the assumption that all the other factors(No of Cylinders, Weight, etc. ) are the same or constant to both Automatic and Manual Transmission. So we need more detailed analysis to conclude. 
+Hence we will explore more through regression models. 
+**Simple Regression Analysis**
+```{r, cache=TRUE}
+fit1 <- lm(mpg~am, data = dt)
+summary(fit1)
+```
+From the above interpretation of coefficient and intercepts, we note that, on average, manual transmission cars have 7.245 MPGs more than automatic transmission.Without any additional variables,because of p-value, we can conclude that manual is better than automatic for fuel efficiency, however there could be other factors which affect the efficiency for which we need multi variate regression. 
+**Mutli Variate Regression Analysis**
+```{r, cache=TRUE}
+fit <- lm(mpg ~ . , data = dt)
+fit.best <- step(fit, trace=0)
+summary(fit.best)
+````
+Using the more complex regression models, the multivariate analysis, we observe that in addition to transmission, weight of the vehicle as well as acceleration speed have the highest relation to explaining the variation in MPG. The adjusted R^2 is 84% which means that the model explains 84% of the variation in MPG indicating it is a robust and highly predictive model.
+**Conclusion**
+The question "Is an automatic or manual transmission better for MPG" is not answerable because, in the quantifying analysis we see that transmission cannot be the only parameter to gauge the MPG but the weight and qces have to be considered for the same. 
+
+
+
+Appendix
+=======================
+
+
+
+
+
+
+
+Exploratory Data Analysis
+------------------------------------
+
+**Comparing Automatic Vs. Manual Transmission** 
+
+```{r, cache=TRUE}
+boxplot(mpg~trans, data = dt, col = c("salmon", "light blue"), xlab = "Transmission Type",
+        ylab = "Miles per Gallon", main = "MPG by Transmission Type")
+```
+
+
+\newpage  
+
+
+
+Best model residual plot
+-------------------------------------
+
+``` {r,cache=TRUE}
+par(mfrow = c(2,2))
+plot(fit.best)
+```
